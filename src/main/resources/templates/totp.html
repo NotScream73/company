@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{default}">
+<div class="container" layout:fragment="content">
+    <form authentication-details-source-ref class="form-signin" th:action="@{/challenge/totp}" method="post">
+        <h2 class="form-signin-heading">Двухфакторная аутентификация</h2>
+        <label for="code" class="sr-only">Код аутентификации:</label>
+        <input type="text" id="code" name="code" class="form-control" placeholder="XXXXXX" required pattern="[0-9]+">
+        <br>
+        <p>
+            Откройте приложение аутентификации (TOTP), чтобы получить доступ к коду аутентификации.
+        </p>
+        <br>
+        <button type="submit" class="btn btn-lg btn-primary btn-block">Проверить</button>
+    </form>
+</div>
+<body>
+</body>
+</html>

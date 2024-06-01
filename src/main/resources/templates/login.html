@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{default}">
+<body>
+<div class="container container-padding" layout:fragment="content">
+    <div class="row col-md-8 offset-md-2">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div th:if="${param.error}">
+                    <div class="alert alert-danger">Неправильный логин или пароль.</div>
+                </div>
+                <div th:if="${param.logout}">
+                    <div class="alert alert-success">Вы вышли из аккаунта.</div>
+                </div>
+                <div th:if="${param.created}" class="alert alert-success margin-bottom">
+                    Пользователь '<span th:text="${param.created}"></span>' успешно создан
+                </div>
+            </div>
+        </div>
+        <div class="card p-0">
+            <div class="card-header">
+                <h2 class="text-center">Вход в систему</h2>
+            </div>
+            <div class="card-body">
+                <form
+                        method="post"
+                        th:action="@{/login}"
+                        class="form-horizontal"
+                        role="form"
+                >
+                    <div class="mb-3">
+                        <label for="username" class="control-label">Имя пользователя</label>
+                        <input type="text"
+                               id="username"
+                               name="username"
+                               class="form-control"
+                               placeholder="Введите имя пользователя"
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="control-label">Пароль</label>
+                        <input type="password"
+                               id="password"
+                               name="password"
+                               class="form-control"
+                               placeholder="Введите пароль"
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary">Войти</button>
+                        <span> Нет аккаунта?
+                            <a th:href="@{/signup}"> Зарегистрируйтесь</a>
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
