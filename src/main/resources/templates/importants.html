@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity"
+      layout:decorate="~{default}">
+<head>
+    <meta charset="UTF-8">
+    <title>Важные новости</title>
+    <style>
+        .card-img-top {
+            max-width: 100%; /* Ограничение ширины до ширины контейнера */
+            max-height: 400px; /* Ограничение высоты до 300 пикселей */
+            display: block; /* Устанавливаем блочный элемент */
+            margin: 0 auto; /* Выравниваем по центру */
+            object-fit: scale-down;
+        }
+
+        /* The container <div> - needed to position the dropdown content */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Dropdown Content (Hidden by Default) */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        /* Links inside the dropdown */
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* Change color of dropdown links on hover */
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+
+        /* Show the dropdown menu on hover */
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .news-title-alert {
+            display: flex;
+            align-items: center;
+        }
+
+        .news-title-alert .alert {
+            margin-left: 10px; /* Расстояние между заголовком и алертом */
+        }
+    </style>
+</head>
+<body>
+<div class="container container-padding" layout:fragment="content">
+    <div class="row">
+        <h1>Важные новости</h1>
+    </div>
+    <div th:if="${newsList.getTotalElements() != 0}">
+        <div class="row">
+            <div class="card" th:each="news : ${newsList}" style="margin-bottom: 20px">
+                <h5 class="card-header d-flex justify-content-between align-items-center">
+                    <p class="h2" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">
+                        [[${news.title}]]</p>
+                    <div th:attr="data-id=${news.id}" onclick="addToFavorites(this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-bookmark" viewBox="0 0 16 16">
+                            <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                        </svg>
+                    </div>
+                </h5>
+                <div class="card-body">
+                    <p class="card-text" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"
+                       th:utext="${news.description}"></p>
+                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+
+                    <div th:if="${news.imageUrl != 'news/uploads'}">
+                        <img th:src="@{${news.imageUrl}}" class="card-img-top" alt="News Image">
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline-success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-plus" viewBox="0 0 16 16">
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                            </svg>
+                        </button>
+                        <button th:attr="data-id=${news.id}" onclick="addToFavorites(this)">Добавить в избранное
+                        </button>
+                        <button th:attr="data-id=${news.id}" onclick="hideNews(this)">Скрыть</button>
+                        <a class="btn btn-outline-secondary" th:href="@{'/news/' + ${news.id}}" role="button">
+                            Подробности
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${newsList.isFirst()} ? 'disabled' : ''">
+                        <a class="page-link"
+                           th:href="@{/news/importants(size=${newsList.getSize()},page=0)}">&lt;&lt;</a>
+                    </li>
+                    <li class="page-item" th:classappend="${newsList.hasPrevious()} ? '' : 'disabled'">
+                        <a th:if="${newsList.hasPrevious()}"
+                           class="page-link"
+                           th:href="@{/news/importants(size=${newsList.getSize()},page=${newsList.getNumber() - 1})}"
+                           th:text="${(currentPage)}"></a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link"
+                           th:href="@{/news/importants(size=${newsList.getSize()},page=${newsList.getNumber()})}"
+                           th:text="${currentPage + 1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${newsList.hasNext() ? '' : 'disabled'}">
+                        <a th:if="${newsList.hasNext()}"
+                           class="page-link"
+                           th:href="@{/news/importants(size=${newsList.getSize()},page=${newsList.getNumber() + 1})}"
+                           th:text="${(currentPage + 2)}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${newsList.isLast()} ? 'disabled' : ''">
+                        <a class="page-link"
+                           th:href="@{/news/importants(size=${newsList.getSize()},page=${newsList.getTotalPages() - 1})}">&gt;&gt;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div th:unless="${newsList.getTotalElements() != 0}">
+        <div class="row">
+            <h1 class="text-center">Пока что важных новостей нет.</h1>
+        </div>
+    </div>
+    <script>
+        var favorites = {
+            false: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+</svg>`,
+            true: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-fill" viewBox="0 0 16 16">
+  <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
+</svg>`
+        }
+
+        function addToFavorites(button) {
+            const newsId = button.getAttribute('data-id');
+            fetch(`/news/favorite/${newsId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.favourite === "true")
+                        button.innerHTML = favorites.true;
+                    else
+                        button.innerHTML = favorites.false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function hideNews(button) {
+            const newsId = button.getAttribute('data-id');
+            fetch(`/news/hide/${newsId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    button.closest('.news-card').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</div>
+</body>
+</html>

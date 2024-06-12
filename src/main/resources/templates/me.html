@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"
+<html lang="ru"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{default}">
 <div class="container" layout:fragment="content">
@@ -55,8 +55,10 @@
                 </form>
             </div>
         </div>
+        <div class="row">
+            <a class="btn btn-outline-success" th:if="${isUser && !user.twoFactorEnabled}" th:href="@{/enable-2fa}" role="button">Включить двухфакторную аутентификацию.</a>
+            <a class="btn btn-outline-danger" th:if="${isUser && user.twoFactorEnabled}" th:href="@{/disable-2fa}" role="button">Отключить двухфакторную аутентификацию.</a>
+        </div>
     </div>
 </div>
-<body>
-</body>
 </html>

@@ -57,10 +57,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/signup/**").permitAll()
                         .requestMatchers("/index").permitAll()
                         .requestMatchers("/users").hasRole("MODERATOR")
+                        .requestMatchers("/houses").hasRole("MODERATOR")
                         .requestMatchers("/enable-2fa").authenticated()
                         .requestMatchers("/signup", "/error").permitAll()
                         .requestMatchers("/challenge/totp").access(new TwoFactorAuthorizationManager())
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 ->
+                        oauth2
+                                .loginPage("/signup/google")
+                                .defaultSuccessUrl("/")
                 )
                 .formLogin(
                         form -> form

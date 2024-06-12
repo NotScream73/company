@@ -1,10 +1,7 @@
 package ru.example.company.user.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import ru.example.company.news.model.News;
 
 @Getter
@@ -12,17 +9,16 @@ import ru.example.company.news.model.News;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Builder
 @Table(name = "user_news")
 public class UserNews {
     @EmbeddedId
-    private UserNewsKey id;
-    @ManyToOne
+    private UserNewsKey id = new UserNewsKey();
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @MapsId("userId")
-    @JoinColumn(name = "user_id")
     private User user;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @MapsId("newsId")
-    @JoinColumn(name = "news_id")
     private News news;
 
     @Column(name = "is_hidden", nullable = false)

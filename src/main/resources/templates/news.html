@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity"
+      layout:decorate="~{default}">
+<head>
+    <meta charset="UTF-8">
+    <title>Лента новостей</title>
+    <style>
+        .card-img-top {
+            max-width: 100%; /* Ограничение ширины до ширины контейнера */
+            max-height: 400px; /* Ограничение высоты до 300 пикселей */
+            display: block; /* Устанавливаем блочный элемент */
+            margin: 0 auto; /* Выравниваем по центру */
+            object-fit: scale-down;
+        }
+
+        /* The container <div> - needed to position the dropdown content */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Dropdown Content (Hidden by Default) */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        /* Links inside the dropdown */
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* Change color of dropdown links on hover */
+        .dropdown-content a:hover {background-color: #ddd;}
+
+        /* Show the dropdown menu on hover */
+        .dropdown:hover .dropdown-content {display: block;}
+        .news-title-alert {
+            display: flex;
+            align-items: center;
+        }
+
+        .news-title-alert .alert {
+            margin-left: 10px; /* Расстояние между заголовком и алертом */
+        }
+    </style>
+</head>
+<body>
+<div class="container container-padding" layout:fragment="content">
+    <div class="row">
+        <h1>Список новостей</h1>
+        <div class="card p-0">
+            <div class="card-header">
+                <h2 class="text-center">Фильтр новостей</h2>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/news}"
+                      th:method="GET"
+                      th:object="${filter}"
+                >
+                    <div class="form-row" style="display: flex; flex-wrap: wrap">
+                        <div class="form-group col-md-6">
+                            <label for="createdAtFrom">Дата начала</label>
+                            <input type="datetime-local"
+                                   class="form-control"
+                                   id="createdAtFrom"
+                                   name="createdAtFrom"
+                                   th:field="*{createdAtFrom}"
+                                   th:value="${createdAtFrom}"
+                                   placeholder="Дата начала"
+                            />
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="createdAtTo">Дата окончания</label>
+                            <input type="datetime-local"
+                                   class="form-control"
+                                   id="createdAtTo"
+                                   name="createdAtTo"
+                                   th:field="*{createdAtTo}"
+                                   th:value="${createdAtTo}"
+                                   placeholder="Дата окончания"
+                            />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Текст в заголовке</label>
+                        <input type="text"
+                               class="form-control"
+                               id="title"
+                               name="title"
+                               th:field="*{title}"
+                               placeholder="Заголовок"
+                        />
+                    </div>
+                    <div class="form-row" style="display: flex; flex-wrap: wrap">
+                        <div class="form-group col-md-6">
+                            <label for="houseId">Дом</label>
+                            <select class="form-control"
+                                    id="houseId"
+                                    name="houseId">
+                                <option value="">Все</option>
+                                <option th:each="house : ${houses}"
+                                        th:value="${house.Id}"
+                                        th:text="${house.address}"
+                                        th:selected="(${house.id} == *{houseId})"
+                                ></option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="category">Тип новости</label>
+                            <select class="form-control"
+                                    id="category"
+                                    name="category">
+                                <option value="">Все</option>
+                                <option th:each="category : ${categories}"
+                                        th:value="${category}"
+                                        th:text="${category.displayName}"
+                                        th:selected="(${category} == *{category})"
+                                ></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group"
+                         sec:authorize="hasRole('ROLE_MODERATOR')">
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="isArchived"
+                                   th:field="*{isArchived}"
+                                   th:checked="*{isArchived}"
+                                   name="isArchived"
+                            />
+                            <label class="form-check-label" for="isArchived">
+                                Искать в архиве
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Искать</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <a class="btn btn-outline-success" sec:authorize="hasRole('ROLE_MODERATOR')" th:href="@{/news/edit}" role="button">
+        Добавить
+    </a>
+    <div th:if="${newsList.getTotalElements() != 0}">
+        <div class="row">
+            <div class="card" th:each="news : ${newsList}" style="margin-bottom: 20px">
+                <h5 class="card-header d-flex justify-content-between align-items-center">
+                    <p class="h2" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;" >[[${news.title}]] <span th:if="${news.category.name() == 'IMPORTANT'}" class="badge bg-danger">ВАЖНО</span></p>
+                    <div class="dropdown">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Dropdown button
+                        </button>
+                        <ul class="dropdown-menu" style="">
+                            <li><a class="dropdown-item" href="#" th:attr="data-id=${news.id}" onclick="addToFavorites(this)">Добавить в избранное</a></li>
+                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                            <li><a class="dropdown-item" href="#">Separated link</a></li>
+                        </ul>
+                    </div>
+                </h5>
+                <div class="card-body">
+                    <p class="card-text" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"  th:utext="${news.description}"></p>
+                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+
+                    <div th:if="${news.imageUrl != 'news/uploads'}">
+                        <img th:src="@{${news.imageUrl}}" class="card-img-top" alt="News Image">
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline-success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                            </svg>
+                        </button>
+                        <button th:attr="data-id=${news.id}" onclick="addToFavorites(this)">Добавить в избранное</button>
+                        <button th:attr="data-id=${news.id}" onclick="hideNews(this)">Скрыть</button>
+                        <a class="btn btn-outline-secondary" th:href="@{'/news/' + ${news.id}}" role="button">
+                            Подробности
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${newsList.isFirst()} ? 'disabled' : ''">
+                        <a class="page-link"
+                           th:href="@{/news(size=${newsList.getSize()},page=0,title=${filter.title},category=${filter.category},createdAtFrom=${filter.createdAtFrom},createdAtTo=${filter.createdAtTo},category=${filter.category},isArchived=${filter.isArchived},houseId=${filter.houseId})}">&lt;&lt;</a>
+                    </li>
+                    <li class="page-item" th:classappend="${newsList.hasPrevious()} ? '' : 'disabled'">
+                        <a th:if="${newsList.hasPrevious()}"
+                           class="page-link"
+                           th:href="@{/news(size=${newsList.getSize()},page=${newsList.getNumber() - 1},title=${filter.title},category=${filter.category},createdAtFrom=${filter.createdAtFrom},createdAtTo=${filter.createdAtTo},category=${filter.category},isArchived=${filter.isArchived},houseId=${filter.houseId})}" th:text="${(currentPage)}"></a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link"
+                           th:href="@{/news(size=${newsList.getSize()},page=${newsList.getNumber()},title=${filter.title},category=${filter.category},createdAtFrom=${filter.createdAtFrom},createdAtTo=${filter.createdAtTo},category=${filter.category},isArchived=${filter.isArchived},houseId=${filter.houseId})}" th:text="${currentPage + 1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${newsList.hasNext() ? '' : 'disabled'}">
+                        <a th:if="${newsList.hasNext()}"
+                           class="page-link"
+                           th:href="@{/news(size=${newsList.getSize()},page=${newsList.getNumber() + 1},title=${filter.title},category=${filter.category},createdAtFrom=${filter.createdAtFrom},createdAtTo=${filter.createdAtTo},category=${filter.category},isArchived=${filter.isArchived},houseId=${filter.houseId})}" th:text="${(currentPage + 2)}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${newsList.isLast()} ? 'disabled' : ''">
+                        <a class="page-link"
+                           th:href="@{/news(size=${newsList.getSize()},page=${newsList.getTotalPages() - 1},title=${filter.title},category=${filter.category},createdAtFrom=${filter.createdAtFrom},createdAtTo=${filter.createdAtTo},category=${filter.category},isArchived=${filter.isArchived},houseId=${filter.houseId})}">&gt;&gt;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div th:unless="${newsList.getTotalElements() != 0}">
+        <div class="row">
+            <h1 class="text-center">Ничего не найдено</h1>
+        </div>
+    </div>
+    <script>
+        function addToFavorites(button) {
+            const newsId = button.getAttribute('data-id');
+            fetch(`/news/favorite/${newsId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function hideNews(button) {
+            const newsId = button.getAttribute('data-id');
+            fetch(`/news/hide/${newsId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    button.closest('.news-card').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity"
+      layout:decorate="~{default}">
+<body>
+<div class="container" layout:fragment="content">
+    <div class="row">
+        <p class="h2">[[${news.title}]] <span th:if="${news.category.name() == 'IMPORTANT'}" class="badge bg-danger">ВАЖНО</span> <span th:if="${news.isArchived}" class="badge bg-warning">АРХИВ</span></p>
+    </div>
+    <div sec:authorize="hasRole('ROLE_MODERATOR')" class="d-flex">
+        <a class="btn btn-outline-secondary" th:href="@{'/news/edit/' + ${id}}" role="button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+        </svg> Редактировать</a>
+        <a class="btn btn btn-danger" th:if="${!news.isArchived}" th:href="@{'/news/archive/' + ${id}}" role="button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-archive" viewBox="0 0 16 16">
+            <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5zm13-3H1v2h14zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+        </svg> Архивировать</a>
+    </div>
+    <div class="row">
+        <p class="h6">Интересующихся пользователей: [[${news.favouriteCount}]].</p>
+    </div>
+    <div class="d-flex" th:if="${news.imageUrl != null}" style="justify-content: center;height: 600px;align-items: center; height: 600px;">
+        <img th:src="'/news/uploads/' + ${news.imageUrl}" alt="News Image" style="max-height: 100%; max-width: 100%;">
+    </div>
+    <div class="row" style="overflow-wrap: break-word;">
+        <p th:utext="${news.description}"></p>
+    </div>
+    <div class="row">
+        Дата публикации: [[${#temporals.format(news.createdAt, 'HH:mm:ss dd MMMM yyyy г.')}]]
+    </div>
+</div>
+</body>
+</html>

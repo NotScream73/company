@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{default}">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить новость</title>
+    <script src="https://cdn.tiny.cloud/1/ejv20a41jx2g3shxldmsqmh8lshbmdnye28zgw2kjv1ssq3j/tinymce/7/tinymce.min.js"
+            referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#description',
+            plugins: 'link image code',
+            toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright | code'
+        });
+    </script>
+</head>
+<body>
+<div class="container container-padding" layout:fragment="content">
+    <div class="row col-md-8 offset-md-2">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div th:if="${param.error}">
+                    <div class="alert alert-danger">Неправильный логин или пароль.</div>
+                </div>
+                <div th:if="${param.logout}">
+                    <div class="alert alert-success">Вы вышли из аккаунта.</div>
+                </div>
+            </div>
+        </div>
+        <div class="card p-0">
+            <div class="card-header">
+                <h2 class="text-center">Создание новости</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" role="form" class="form-horizontal" th:action="@{'/news/' + ${id != null ? id : ''}}" th:object="${news}"
+                      enctype="multipart/form-data">
+                    <div class="form-group mb-3">
+                        <label for="title" class="form-label required">Заголовок</label>
+                        <input type="text"
+                               id="title"
+                               name="title"
+                               class="form-control"
+                               th:field="*{title}"
+                               placeholder="Введите заголовок новости"
+                        />
+                        <p th:errors="*{title}" class="text-danger"
+                           th:if="${#fields.hasErrors('title')}">
+                        </p>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="description" class="form-label required">Описание</label>
+                        <textarea type="text"
+                                  id="description"
+                                  name="description"
+                                  class="form-control"
+                                  th:field="*{description}"
+                                  placeholder="Введите описание новости"
+                        ></textarea>
+                        <p th:errors="*{description}" class="text-danger"
+                           th:if="${#fields.hasErrors('description')}">
+                        </p>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="image" class="form-label">Изображение</label>
+                        <input type="file"
+                               id="image"
+                               name="image"
+                               class="form-control"
+                               th:field="*{image}"
+                               placeholder="Введите описание новости"
+                               accept="image/png, image/jpeg"
+                        />
+                        <p th:errors="*{image}" class="text-danger"
+                           th:if="${#fields.hasErrors('image')}">
+                        </p>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label required">Тип новости</label>
+                        <select class="form-select" id="category" name="category">
+                            <option th:each="category : ${categories}" th:value="${category}"
+                                    th:text="${category.displayName}"></option>
+                        </select>
+                        <p th:errors="*{category}" class="text-danger"
+                           th:if="${#fields.hasErrors('category')}">
+                        </p>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label required">К кому относится данная новость?</label>
+                        <select class="form-select" id="houseId" name="houseId">
+                            <option th:each="house : ${houses}" th:value="${house.id}"
+                                    th:text="${house.address}"></option>
+                        </select>
+                        <p th:errors="*{houseId}" class="text-danger"
+                           th:if="${#fields.hasErrors('houseId')}">
+                        </p>
+                    </div>
+                    <div class="form-group mb-3">
+                        <button class="btn btn-primary" type="submit" th:text="${id != null ? 'Обновить' : 'Добавить'}" ></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

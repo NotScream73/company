@@ -68,6 +68,12 @@ public class TwoFactorAuthController {
         return "redirect:/";
     }
 
+    @GetMapping(path = "/disable-2fa")
+    public String processDisableTwoFactor(@AuthenticationPrincipal CustomUserDetails accountUserDetails, Model model) {
+        userService.disable2FA(accountUserDetails.getUser().getId());
+        return "redirect:/me";
+    }
+
     @GetMapping(path = "/challenge/totp")
     public String requestTotp() {
         return "totp";

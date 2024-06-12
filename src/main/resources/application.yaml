@@ -3,7 +3,17 @@ spring:
     url: jdbc:postgresql://localhost:5432/company
     username: postgres
     password: postgres
-
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 156208180345-4q726giop2irftosqve4h1c6kdlse5k4.apps.googleusercontent.com
+            client-secret: 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
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
   jpa:
     hibernate:
       ddl-auto: update
@@ -12,3 +22,8 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
+server:
+  port: 80
+vk:
+  service:
+    token: 74469e3d74469e3d74469e3d40775eb6757744674469e3d12681e7165db86025afb2526

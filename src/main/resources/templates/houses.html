@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{default}">
+<div class="container" layout:fragment="content">
+    <div class="row">
+        <h1>Список домов</h1>
+    </div>
+    <table class="table table-striped table-bordered table-hover">
+        <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Адрес</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="house: ${houses}">
+            <td th:text="${house.id}"></td>
+            <td th:text="${house.address}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<body>
+</body>
+</html>
