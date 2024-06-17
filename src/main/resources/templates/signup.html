@@ -2,71 +2,87 @@
 <html lang="en"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{default}">
-<body>
-<div class="container container-padding" layout:fragment="content">
-    <div class="row col-md-8 offset-md-2">
-        <div class="card p-0">
-            <div class="card-header">
-                <h2 class="text-center">Регистрация</h2>
+    <div class="container container-padding" layout:fragment="content">
+        <div class="row col-md-8 offset-md-2">
+            <div th:if="${validationErrors != null}" class="p-3 mb-2 bg-danger bg-gradient text-white">
+                <p class="h1">Обнаружены ошибки
+                    <ul>
+                        <li th:each="error : ${validationErrors}"
+                            th:text="${error}"></li>
+                    </ul>
+                </p>
             </div>
-            <div class="card-body">
-                <form method="post" role="form" th:action="@{/signup}" th:object="${user}">
-                    <div class="form-group mb-3">
-                        <label class="form-label required">Имя пользователя</label>
-                        <input class="form-control"
-                               id="username"
-                               name="username"
-                               placeholder="Введите имя пользователя"
-                               th:field="*{username}"
-                               type="text"
-                        />
-                        <p th:errors="*{username}" class="text-danger"
-                           th:if="${#fields.hasErrors('username')}">
-                        </p>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="form-label required">Адрес электронной почты</label>
-                        <input class="form-control"
-                               id="email"
-                               name="email"
-                               placeholder="Введите адрес электронной почты"
-                               th:field="*{email}"
-                               type="email"
-                        />
-                        <p th:errors="*{email}" class="text-danger"
-                           th:if="${#fields.hasErrors('email')}">
-                        </p>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="form-label required">Пароль</label>
-                        <input class="form-control"
-                               id="password"
-                               name="password"
-                               placeholder="Введите пароль"
-                               th:field="*{password}"
-                               type="password"
-                        />
-                        <p th:errors="*{password}" class="text-danger"
-                           th:if="${#fields.hasErrors('password')}">
-                        </p>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="form-label required">Место проживания</label>
-                        <select class="form-select" id="houseId" name="houseId">
-                            <option th:each="house : ${houses}" th:value="${house.id}" th:text="${house.address}"></option>
-                        </select>
-                        <p th:errors="*{houseId}" class="text-danger"
-                           th:if="${#fields.hasErrors('houseId')}">
-                        </p>
-                    </div>
-                    <div class="form-group mb-3">
-                        <button class="btn btn-primary" type="submit">Зарегистрироваться</button>
-                        <span>Уже есть аккаунт? <a href="/" th:href="@{/login}">Войти</a></span>
-                    </div>
-                </form>
+            <div class="card p-0">
+                <div class="card-header">
+                    <h2 class="text-center">Регистрация</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" role="form" th:action="@{/signup}" th:object="${user}">
+                        <div class="form-group mb-3">
+                            <label class="form-label required" for="username">Имя пользователя</label>
+                            <input class="form-control"
+                                   id="username"
+                                   placeholder="Введите имя пользователя"
+                                   th:field="*{username}"
+                                   type="text"
+                                   minlength="1"
+                                   maxlength="255"
+                                   required
+                            />
+                            <p th:errors="*{username}" class="text-danger"
+                               th:if="${#fields.hasErrors('username')}">
+                            </p>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label required" for="email">Адрес электронной почты</label>
+                            <input class="form-control"
+                                   id="email"
+                                   placeholder="Введите адрес электронной почты"
+                                   th:field="*{email}"
+                                   type="email"
+                                   minlength="1"
+                                   maxlength="255"
+                                   required
+                            />
+                            <p th:errors="*{email}" class="text-danger"
+                               th:if="${#fields.hasErrors('email')}">
+                            </p>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label required" for="password">Пароль</label>
+                            <input class="form-control"
+                                   id="password"
+                                   placeholder="Введите пароль"
+                                   th:field="*{password}"
+                                   type="password"
+                                   minlength="1"
+                                   maxlength="255"
+                                   required
+                            />
+                            <p th:errors="*{password}" class="text-danger"
+                               th:if="${#fields.hasErrors('password')}">
+                            </p>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label required" for="houseId">Место проживания</label>
+                            <select class="form-select" id="houseId" th:field="*{houseId}" required>
+                                <option th:each="house : ${houses}"
+                                        th:value="${house.id}"
+                                        th:selected="*{houseId} == ${house.id}"
+                                        th:text="${house.address}">
+                                </option>
+                            </select>
+                            <p th:errors="*{houseId}" class="text-danger"
+                               th:if="${#fields.hasErrors('houseId')}">
+                            </p>
+                        </div>
+                        <div class="form-group mb-3">
+                            <button class="btn btn-primary" type="submit">Зарегистрироваться</button>
+                            <span>Уже есть аккаунт? <a href="/" th:href="@{/login}">Войти</a></span>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
-</body>
 </html>

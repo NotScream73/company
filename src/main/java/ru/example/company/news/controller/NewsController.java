@@ -1,13 +1,15 @@
 package ru.example.company.news.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,17 +17,24 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ru.example.company.configuration.CustomUserDetails;
 import ru.example.company.house.service.HouseService;
 import ru.example.company.news.model.News;
 import ru.example.company.news.model.NewsCategory;
 import ru.example.company.news.model.dto.NewsCreateDto;
 import ru.example.company.news.model.dto.NewsFilterDto;
+import ru.example.company.news.model.dto.NewsImportDto;
 import ru.example.company.news.service.NewsService;
 import ru.example.company.user.service.UserService;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -34,14 +43,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/news")
 public class NewsController {
-    private final Path root = Paths.get("uploads");
     private final NewsService newsService;
     private final HouseService houseService;
     private final UserService userService;
+    @Value("${upload.path}")
+    private String uploadPath;
 
     @GetMapping
     public String getAllNews(Model model,
                              @ModelAttribute("filter") NewsFilterDto filter,
+                             @AuthenticationPrincipal CustomUserDetails accountUserDetails,
                              @PageableDefault(page = 0,
                                      size = 2,
                                      sort = "createdAt",
@@ -57,6 +68,7 @@ public class NewsController {
         Page<News> news = newsService.findAll(filter, pageable);
         model.addAttribute("newsList", news);
         model.addAttribute("currentPage", news.getPageable().getPageNumber());
+        model.addAttribute("userId", accountUserDetails.getUser().getId());
         return "news";
     }
 
@@ -71,8 +83,8 @@ public class NewsController {
     }
 
     @GetMapping(value = {"/edit", "/edit/{id}"})
-    public String editNews(@PathVariable(required = false) UUID id,
-                           Model model) {
+    public String editNewsPage(@PathVariable(required = false) UUID id,
+                               Model model) {
         if (id == null) {
             model.addAttribute("news", new NewsCreateDto());
         } else {
@@ -91,6 +103,13 @@ public class NewsController {
                            Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
+            model.addAttribute("houses", houseService.findAll());
+            model.addAttribute("categories", NewsCategory.values());
+            return "edit-news";
+        }
+        var errors = newsService.validateCreateNewsDto(newsCreateDto);
+        if (!errors.isEmpty()) {
+            model.addAttribute("validationErrors", errors);
             model.addAttribute("houses", houseService.findAll());
             model.addAttribute("categories", NewsCategory.values());
             return "edit-news";
@@ -116,14 +135,10 @@ public class NewsController {
     }
 
     @PostMapping("/hide/{newsId}")
-    @ResponseBody
-    public Map<String, String> hideNews(@AuthenticationPrincipal CustomUserDetails accountUserDetails, @PathVariable UUID newsId) {
+    public String hideNews(@AuthenticationPrincipal CustomUserDetails accountUserDetails, HttpServletRequest req, @PathVariable UUID newsId) {
         userService.hideNews(accountUserDetails.getUser(), newsId);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("status", "success");
-        response.put("message", "Новость скрыта");
-        return response;
+        var url = req.getHeader("referer");
+        return "redirect:/" + url;
     }
 
 
@@ -134,32 +149,97 @@ public class NewsController {
         return "redirect:/news/" + newsId;
     }
 
-    @GetMapping("/uploads/{filename:.+}")
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
-        Resource resource = newsService.load(filename);
-        if (resource.exists() || resource.isReadable()) {
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                    .body(resource);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/importants")
-    public String getImportantListNews(Model model,
+    @GetMapping("/breakings")
+    public String getBreakingsListNews(Model model,
                                        @AuthenticationPrincipal CustomUserDetails accountUserDetails,
                                        @PageableDefault(page = 0,
                                                size = 3,
                                                sort = "createdAt",
                                                direction = Sort.Direction.DESC) Pageable pageable) {
         var filter = new NewsFilterDto();
-        filter.setCategory(NewsCategory.IMPORTANT);
+        filter.setCategory(NewsCategory.BREAKING);
         filter.setIsArchived(null);
         filter.setHouseId(accountUserDetails.getUser().getHouse().getId());
+        filter.setExpiresAt(LocalDateTime.now());
         var news = newsService.findAll(filter, pageable);
         model.addAttribute("newsList", news);
         model.addAttribute("currentPage", news.getPageable().getPageNumber());
-        return "importants";
+        return "breakings";
+    }
+
+    @GetMapping("/favourites")
+    public String getFavouritesListNews(Model model,
+                                        @AuthenticationPrincipal CustomUserDetails accountUserDetails,
+                                        @PageableDefault(page = 0,
+                                                size = 3,
+                                                sort = "createdAt",
+                                                direction = Sort.Direction.DESC) Pageable pageable) {
+        var news = newsService.findAllFavourites(accountUserDetails.getUser().getId(), pageable);
+        model.addAttribute("newsList", news);
+        model.addAttribute("currentPage", news.getPageable().getPageNumber());
+        return "favourites";
+    }
+
+    @GetMapping("/import")
+    public String showImportForm() {
+        return "import";
+    }
+
+    @PostMapping("/import")
+    public String importNews(@RequestParam("file") MultipartFile file) {
+        try {
+            // Чтение содержимого файла
+            byte[] bytes;
+            try {
+                bytes = file.getBytes();
+            } catch (Exception exception) {
+                return null;
+            }
+            String jsonString = new String(bytes, StandardCharsets.UTF_8);
+
+            // Десериализация JSON в объект DTO
+            ObjectMapper objectMapper = new ObjectMapper();
+            NewsImportDto newsImportDto = objectMapper.readValue(jsonString, NewsImportDto.class);
+
+            // Преобразование DTO в вашу сущность News и сохранение в базу данных
+            newsService.importNews(newsImportDto);
+
+            return "redirect:/news"; // Перенаправление на страницу со списком новостей
+        } catch (IOException e) {
+            e.printStackTrace(); // Обработка ошибок при чтении или десериализации файла
+            return "import";
+        }
+    }
+
+    @GetMapping("/images/{url}")
+    @ResponseBody
+    public ResponseEntity<byte[]> getImage(@PathVariable("url") String url) {
+        // Путь к изображению
+        String imagePath = uploadPath + url; // Укажите путь к вашему изображению
+        // Чтение файла из системы
+        File file = new File(imagePath);
+
+        // Проверяем, существует ли файл
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Чтение содержимого файла в байтовый массив
+        Path path = Paths.get(imagePath);
+        byte[] imageBytes;
+        try {
+
+            imageBytes = Files.readAllBytes(path);
+        } catch (Exception exception) {
+            return null;
+        }
+
+        // Определяем MediaType изображения
+        MediaType mediaType = MediaType.IMAGE_JPEG; // Измените в зависимости от типа изображения
+
+        // Возвращаем ResponseEntity с содержимым файла и заголовками
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .body(imageBytes);
     }
 }

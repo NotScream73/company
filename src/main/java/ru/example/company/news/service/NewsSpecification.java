@@ -34,6 +34,9 @@ public class NewsSpecification implements Specification<News> {
         if (filter.getCreatedAtTo() != null)
             predicatesList.add(cb.lessThanOrEqualTo(root.get("createdAt"), filter.getCreatedAtTo()));
 
+        if (filter.getExpiresAt() != null)
+            predicatesList.add(cb.greaterThanOrEqualTo(root.get("expiresAt"), filter.getExpiresAt()));
+
         return cb.and(predicatesList.toArray(new Predicate[0]));
     }
 }

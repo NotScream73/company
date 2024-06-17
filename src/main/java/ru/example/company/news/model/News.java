@@ -1,6 +1,7 @@
 package ru.example.company.news.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.UuidGenerator;
@@ -36,6 +37,9 @@ public class News {
     @Column(name = "category", nullable = false)
     @Enumerated(EnumType.STRING)
     private NewsCategory category = NewsCategory.GENERAL;
+
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
 
     @Column(name = "is_archived", nullable = false)
     private Boolean isArchived = false;

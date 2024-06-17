@@ -1,4 +1,4 @@
-package ru.example.company.user.controller;
+package ru.example.company.twofactorauth;
 
 import java.io.IOException;
 
@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.example.company.configuration.CustomUserDetails;
-import ru.example.company.twofactorauth.TwoFactorAuthentication;
-import ru.example.company.twofactorauth.TwoFactorAuthenticationCodeVerifier;
 import ru.example.company.twofactorauth.totp.QrCode;
 import ru.example.company.user.model.User;
 import ru.example.company.user.service.UserService;

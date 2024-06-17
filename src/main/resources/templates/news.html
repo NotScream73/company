@@ -152,38 +152,68 @@
     <a class="btn btn-outline-success" sec:authorize="hasRole('ROLE_MODERATOR')" th:href="@{/news/edit}" role="button">
         Добавить
     </a>
+    <a class="btn btn-outline-success" sec:authorize="hasRole('ROLE_MODERATOR')" th:href="@{/news/import}" role="button">
+        Импортировать из файла
+    </a>
     <div th:if="${newsList.getTotalElements() != 0}">
         <div class="row">
             <div class="card" th:each="news : ${newsList}" style="margin-bottom: 20px">
                 <h5 class="card-header d-flex justify-content-between align-items-center">
-                    <p class="h2" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;" >[[${news.title}]] <span th:if="${news.category.name() == 'IMPORTANT'}" class="badge bg-danger">ВАЖНО</span></p>
-                    <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Dropdown button
-                        </button>
-                        <ul class="dropdown-menu" style="">
-                            <li><a class="dropdown-item" href="#" th:attr="data-id=${news.id}" onclick="addToFavorites(this)">Добавить в избранное</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                            <li><a class="dropdown-item" href="#">Separated link</a></li>
-                        </ul>
+                    <p class="h2" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;" >[[${news.title}]] <span th:if="${news.category.name() != 'GENERAL'}" class="badge bg-danger">[[${news.category.displayName}]]</span></p>
+                    <div th:attr="data-id=${news.id}" onclick="addToFavorites(this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-bookmark" viewBox="0 0 16 16">
+                            <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                        </svg>
                     </div>
                 </h5>
                 <div class="card-body">
                     <p class="card-text" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"  th:utext="${news.description}"></p>
-                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-
-                    <div th:if="${news.imageUrl != 'news/uploads'}">
-                        <img th:src="@{${news.imageUrl}}" class="card-img-top" alt="News Image">
+                    <div th:if="${news.imageUrl != null}">
+                        <img th:src="@{/news/images/{imageName}(imageName=${news.imageUrl})}" class="card-img-top" alt="News Image">
                     </div>
                     <div>
-                        <button type="button" class="btn btn-outline-success">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
-                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                            </svg>
-                        </button>
-                        <button th:attr="data-id=${news.id}" onclick="addToFavorites(this)">Добавить в избранное</button>
-                        <button th:attr="data-id=${news.id}" onclick="hideNews(this)">Скрыть</button>
+                        <form method="post" th:action="@{/news/hide/{id}(id=${news.id})}">
+                            <button role="button" class="btn btn-primary">Скрыть</button>
+                        </form>
+                        <button role="button" class="btn btn-primary" th:attr="data-id=${news.id}" onclick="openShareModal(this)">Поделиться</button>
+                        <!-- Modal -->
+                        <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Поделиться новостью</h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="shareForm">
+                                            <div class="form-group">
+                                                <label for="destinationId">Выберите получателя</label>
+                                                <select class="form-control" id="destinationId" name="destinationId">
+                                                </select>
+                                            </div>
+                                            <input type="hidden" id="newsId" name="newsId" th:value="${news.id}">
+                                            <input type="hidden" id="senderId" name="senderId" th:value="${userId}">
+                                            <button type="button" class="btn btn-primary" onclick="sendNews()">Отправить</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button role="button" class="btn btn-primary" th:attr="data-id=${news.id}" onclick="copyToClipboard(this)">Скопировать ссылку</button>
+                        <div class="dropdown">
+                            <button role="button" class="btn btn-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Установить напоминание
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" th:attr="data-id=${news.id}" href="#" data-value="60000" >1 минута</a></li>
+                                <li><a class="dropdown-item" th:attr="data-id=${news.id}" href="#" data-value="900000">15 минут</a></li>
+                                <li><a class="dropdown-item" th:attr="data-id=${news.id}" href="#" data-value="1800000">30 минут</a></li>
+                                <li><a class="dropdown-item" th:attr="data-id=${news.id}" href="#" data-value="3600000">1 час</a></li>
+                                <li><a class="dropdown-item" th:attr="data-id=${news.id}" href="#" data-value="7200000">2 часа</a></li>
+                                <li><a class="dropdown-item" th:attr="data-id=${news.id}" href="#" data-value="28800000">8 часов</a></li>
+                                <li><a class="dropdown-item" th:attr="data-id=${news.id}" href="#" data-value="86400000">1 день</a></li>
+                            </ul>
+                        </div>
                         <a class="btn btn-outline-secondary" th:href="@{'/news/' + ${news.id}}" role="button">
                             Подробности
                         </a>
@@ -225,44 +255,6 @@
             <h1 class="text-center">Ничего не найдено</h1>
         </div>
     </div>
-    <script>
-        function addToFavorites(button) {
-            const newsId = button.getAttribute('data-id');
-            fetch(`/news/favorite/${newsId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-            })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-
-        function hideNews(button) {
-            const newsId = button.getAttribute('data-id');
-            fetch(`/news/hide/${newsId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-            })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    button.closest('.news-card').style.display = 'none';
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-    </script>
 </div>
 </body>
 </html>

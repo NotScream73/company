@@ -2,47 +2,45 @@
 <html lang="en"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{default}">
-<body>
-<div class="container container-padding" layout:fragment="content">
-    <h1>Подтверждение аутентификатора</h1>
-    <p>
-        Приложения для аутентификации, такие как Google Authenticator, генерируют одноразовые пароли в качестве
-        двухэтапной защиты вашего аккаунта.
-    </p>
-    <p>
-        Используйте приложение для сканирования QR-кода.
-    </p>
-
-    <img th:src="${qrCode}">
-
-    <br>
-    <br>
-
-    Не можете отсканировать QR-код? Вы можете использовать <a
-        href="#" th:onclick="'javascript:document.getElementById(\'setup-key\').style.display=\'block\';'">секретный
-    ключ</a> чтобы вручную настроить приложение для аутентификации.
-    <br>
-
-    <div id="setup-key" th:style="'display: none'" class="alert alert-light" role="alert">
+    <div class="container container-padding" layout:fragment="content">
+        <h1>Подтверждение аутентификатора</h1>
         <p>
-            Ваш секретный ключ
+            Приложения для аутентификации, такие как Google Authenticator, генерируют одноразовые пароли в качестве
+            двухэтапной защиты вашего аккаунта.
         </p>
-        <pre><code th:text="${secret}"></code></pre>
-    </div>
-    <br>
-    <p>
-        Подтвердите код из приложения
-    </p>
-    <div th:if="${message}">
-        <div class="alert alert-danger" role="alert" th:text="${message}"></div>
-    </div>
+        <p>
+            Используйте приложение для сканирования QR-кода.
+        </p>
 
-    <form th:action="@{/enable-2fa}" method="post">
-        <label for="code" class="sr-only">Authentication Code:</label>
-        <input type="text" id="code" name="code" class="form-control" placeholder="XXXXXX" required pattern="[0-9]+">
+        <img th:src="${qrCode}">
+
         <br>
-        <button type="submit" class="btn btn-lg btn-primary btn-block">Verify</button>
-    </form>
-</div>
-</body>
+        <br>
+
+        Не можете отсканировать QR-код? Вы можете использовать <a
+            href="#" th:onclick="'javascript:document.getElementById(\'setup-key\').style.display=\'block\';'">секретный
+        ключ</a> чтобы вручную настроить приложение для аутентификации.
+        <br>
+
+        <div id="setup-key" th:style="'display: none'" class="alert alert-light" role="alert">
+            <p>
+                Ваш секретный ключ
+            </p>
+            <pre><code th:text="${secret}"></code></pre>
+        </div>
+        <br>
+        <p>
+            Подтвердите код из приложения
+        </p>
+        <div th:if="${message}">
+            <div class="alert alert-danger" role="alert" th:text="${message}"></div>
+        </div>
+
+        <form th:action="@{/enable-2fa}" method="post">
+            <label for="code" class="sr-only">Код аутентификации:</label>
+            <input type="text" id="code" name="code" class="form-control" placeholder="XXXXXX" required pattern="\d{6}" minlength="6" maxlength="6">
+            <br>
+            <button type="submit" class="btn btn-lg btn-primary btn-block">Войти</button>
+        </form>
+    </div>
 </html>

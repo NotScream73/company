@@ -1,8 +1,6 @@
 package ru.example.company.news.model.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.example.company.news.model.NewsCategory;
 
@@ -12,6 +10,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class NewsFilterDto {
     private String title;
 
@@ -22,6 +22,8 @@ public class NewsFilterDto {
     private LocalDateTime createdAtFrom;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime createdAtTo;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime expiresAt;
 
     private UUID houseId;
 }

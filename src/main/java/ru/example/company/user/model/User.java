@@ -39,7 +39,8 @@ public class User {
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserRole role;
-
+    @Column(name = "vk_id", nullable = true)
+    private Long vkId;
     @ManyToOne
     @JoinColumn(name = "house_id", nullable = false)
     private House house;

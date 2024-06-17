@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{default}">
+<div class="container" layout:fragment="content">
+    <div class="row col-md-8 offset-md-2">
+        <div th:if="${validationErrors != null}" class="p-3 mb-2 bg-danger bg-gradient text-white">
+            <p class="h1">Обнаружены ошибки
+            <ul>
+                <li th:each="error : ${validationErrors}"
+                    th:text="${error}"></li>
+            </ul>
+            </p>
+        </div>
+        <div class="card p-0">
+            <div class="card-header">
+                <h2 class="text-center">Редактирование профиля</h2>
+            </div>
+            <div class="card-body">
+                <form method="post"
+                      role="form"
+                      class="form-horizontal"
+                      th:action="@{/me/edit}"
+                      th:object="${user}"
+                >
+                    <div class="form-group mb-3">
+                        <label for="username" class="form-label required">Имя пользователя</label>
+                        <input type="text"
+                               id="username"
+                               class="form-control"
+                               th:field="*{username}"
+                               placeholder="Введите имя пользователя"
+                               minlength="1"
+                               maxlength="255"
+                               required
+                        />
+                        <p th:errors="*{username}" class="text-danger"
+                           th:if="${#fields.hasErrors('username')}">
+                        </p>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="password" class="form-label required">Пароль</label>
+                        <input type="password"
+                               id="password"
+                               class="form-control"
+                               th:field="*{password}"
+                               placeholder="Введите пароль"
+                               minlength="1"
+                               maxlength="255"
+                               required
+                        />
+                        <p th:errors="*{password}" class="text-danger"
+                           th:if="${#fields.hasErrors('password')}">
+                        </p>
+                    </div>
+                    <div class="form-group mb-3" th:if="isAdmin == true">
+                        <label class="form-label required" for="houseId">Место проживания</label>
+                        <select class="form-select" id="houseId" th:field="*{houseId}" required>
+                            <option th:each="house : ${houses}"
+                                    th:value="${house.id}"
+                                    th:selected="*{houseId} == ${house.id}"
+                                    th:text="${house.address}">
+                            </option>
+                        </select>
+                        <p th:errors="*{houseId}" class="text-danger"
+                           th:if="${#fields.hasErrors('houseId')}">
+                        </p>
+                    </div>
+                    <div class="form-group mb-3">
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                        <a href="/me">
+                            <input type="button" class="btn btn-secondary" value="Отменить"/>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

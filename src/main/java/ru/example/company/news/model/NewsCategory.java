@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum NewsCategory {
     GENERAL("Обычная"),
-    IMPORTANT("Важно");
+    IMPORTANT("Важно"),
+    BREAKING("Срочно");
     private final String displayName;
 
     NewsCategory(String displayName) {

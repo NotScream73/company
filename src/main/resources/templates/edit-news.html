@@ -18,31 +18,32 @@
 <body>
 <div class="container container-padding" layout:fragment="content">
     <div class="row col-md-8 offset-md-2">
-        <div class="row">
-            <div class="col-md-6 offset-md-3">
-                <div th:if="${param.error}">
-                    <div class="alert alert-danger">Неправильный логин или пароль.</div>
-                </div>
-                <div th:if="${param.logout}">
-                    <div class="alert alert-success">Вы вышли из аккаунта.</div>
-                </div>
-            </div>
+        <div th:if="${validationErrors != null}" class="p-3 mb-2 bg-danger bg-gradient text-white">
+            <p class="h1">Обнаружены ошибки
+                <ul>
+                    <li th:each="error : ${validationErrors}"
+                        th:text="${error}"></li>
+                </ul>
+            </p>
         </div>
         <div class="card p-0">
             <div class="card-header">
                 <h2 class="text-center">Создание новости</h2>
             </div>
             <div class="card-body">
-                <form method="post" role="form" class="form-horizontal" th:action="@{'/news/' + ${id != null ? id : ''}}" th:object="${news}"
+                <form method="post" role="form" class="form-horizontal"
+                      th:action="@{'/news/' + ${id != null ? id : ''}}" th:object="${news}"
                       enctype="multipart/form-data">
                     <div class="form-group mb-3">
                         <label for="title" class="form-label required">Заголовок</label>
                         <input type="text"
                                id="title"
-                               name="title"
                                class="form-control"
                                th:field="*{title}"
                                placeholder="Введите заголовок новости"
+                               minlength="1"
+                               maxlength="512"
+                               required
                         />
                         <p th:errors="*{title}" class="text-danger"
                            th:if="${#fields.hasErrors('title')}">
@@ -50,9 +51,7 @@
                     </div>
                     <div class="form-group mb-3">
                         <label for="description" class="form-label required">Описание</label>
-                        <textarea type="text"
-                                  id="description"
-                                  name="description"
+                        <textarea id="description"
                                   class="form-control"
                                   th:field="*{description}"
                                   placeholder="Введите описание новости"
@@ -65,7 +64,6 @@
                         <label for="image" class="form-label">Изображение</label>
                         <input type="file"
                                id="image"
-                               name="image"
                                class="form-control"
                                th:field="*{image}"
                                placeholder="Введите описание новости"
@@ -76,32 +74,86 @@
                         </p>
                     </div>
                     <div class="form-group mb-3">
-                        <label class="form-label required">Тип новости</label>
-                        <select class="form-select" id="category" name="category">
-                            <option th:each="category : ${categories}" th:value="${category}"
-                                    th:text="${category.displayName}"></option>
+                        <label class="form-label required"
+                               for="category">
+                            Тип новости
+                        </label>
+                        <select class="form-select"
+                                id="category"
+                                th:field="*{category}"
+                                onchange="toggleDatetimeInputs()"
+                                required>
+                            <option th:each="kind : ${categories}"
+                                    th:value="${kind}"
+                                    th:selected="*{category} == ${kind}"
+                                    th:text="${kind.displayName}">
+                            </option>
                         </select>
                         <p th:errors="*{category}" class="text-danger"
                            th:if="${#fields.hasErrors('category')}">
                         </p>
                     </div>
+                    <div id="datetimeInputs" style="display:none;" class="form-group mb-3">
+                        <label class="form-label" for="expiresAt">Дата окончания</label>
+                        <input type="datetime-local"
+                               class="form-control"
+                               id="expiresAt"
+                               th:field="*{expiresAt}"
+                               placeholder="Дата окончания"
+                        />
+                        <p th:errors="*{expiresAt}" class="text-danger"
+                           th:if="${#fields.hasErrors('expiresAt')}">
+                        </p>
+                    </div>
                     <div class="form-group mb-3">
-                        <label class="form-label required">К кому относится данная новость?</label>
-                        <select class="form-select" id="houseId" name="houseId">
-                            <option th:each="house : ${houses}" th:value="${house.id}"
-                                    th:text="${house.address}"></option>
+                        <label class="form-label required"
+                               for="houseId">
+                            К кому относится данная новость?
+                        </label>
+                        <select class="form-select"
+                                id="houseId"
+                                th:field="*{houseId}"
+                                required>
+                            <option th:each="house : ${houses}"
+                                    th:value="${house.id}"
+                                    th:selected="*{houseId} == ${house.id}"
+                                    th:text="${house.address}">
+                            </option>
                         </select>
                         <p th:errors="*{houseId}" class="text-danger"
                            th:if="${#fields.hasErrors('houseId')}">
                         </p>
                     </div>
                     <div class="form-group mb-3">
-                        <button class="btn btn-primary" type="submit" th:text="${id != null ? 'Обновить' : 'Добавить'}" ></button>
+                        <button class="btn btn-primary"
+                                type="submit"
+                                th:text="${id != null ? 'Обновить' : 'Добавить'}"></button>
+                        <a th:if="${id != null}" th:href="@{('/news/' + ${id})}">
+                            <input type="button" class="btn btn-secondary" value="Отменить"/>
+                        </a>
+                        <a th:if="${id == null}" th:href="@{/news}">
+                            <input type="button" class="btn btn-secondary" value="Отменить"/>
+                        </a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    <script>
+        function toggleDatetimeInputs() {
+            const selection = document.getElementById('category').value;
+            const datetimeInputs = document.getElementById('datetimeInputs');
+            if (selection === 'BREAKING') {
+                datetimeInputs.style.display = 'block';
+            } else {
+                datetimeInputs.style.display = 'none';
+            }
+        }
+
+        window.onload = function () {
+            toggleDatetimeInputs();
+        }
+    </script>
 </div>
 </body>
 </html>

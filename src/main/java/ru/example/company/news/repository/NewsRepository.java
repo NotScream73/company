@@ -1,5 +1,7 @@
 package ru.example.company.news.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +22,13 @@ public interface NewsRepository extends JpaRepository<News, UUID>, JpaSpecificat
             "JOIN n.house h " +
             "WHERE n.id = :newsId")
     NewsDetailsDto findByNewsIdAndUserId(@Param("newsId") UUID newsId, @Param("userId") UUID userId);
+
+    @Query(value = "SELECT n FROM News n " +
+            "JOIN UserNews u ON n.id = u.id.newsId " +
+            "WHERE u.isFavorite = true and u.id.userId = ?1")
+    Page<News> findAllNewsByUserIdAndIsFavorite(UUID user_id, Pageable pageable);
+
+    @Query(value = "SELECT n.house.id from News n " +
+            "WHERE n.id = ?1")
+    UUID findHouseIdById(UUID id);
 }

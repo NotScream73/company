@@ -2,12 +2,14 @@
 <html lang="ru"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{default}">
-<body>
-<div class="container" layout:fragment="content">
-    <div class="alert alert-danger">
-        <span th:text="${error}"></span>
+    <div class="container" layout:fragment="content">
+        <div class="alert alert-danger">
+            <h1>Произошла ошибка</h1>
+            <p>Кажется, возникла проблема с запрошенной вами страницей.
+                (<span th:text="${path}"></span>).</p>
+            <p th:text="${'Код ошибки: ' + status + ', это означает, что ' + error + '.'}"></p>
+            <p th:text="${'Подробная информация: ' + message + '.'}"></p>
+        </div>
+        <a class="btn" th:href="${returnUrl}">Назад</a>
     </div>
-    <a href="/">На главную</a>
-</div>
-</body>
 </html>

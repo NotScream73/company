@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity"
+      layout:decorate="~{default}">
+<head>
+    <meta charset="UTF-8">
+    <title>Важные новости</title>
+    <style>
+        .card-img-top {
+            max-width: 100%; /* Ограничение ширины до ширины контейнера */
+            max-height: 400px; /* Ограничение высоты до 300 пикселей */
+            display: block; /* Устанавливаем блочный элемент */
+            margin: 0 auto; /* Выравниваем по центру */
+            object-fit: scale-down;
+        }
+
+        /* The container <div> - needed to position the dropdown content */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Dropdown Content (Hidden by Default) */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        /* Links inside the dropdown */
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* Change color of dropdown links on hover */
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+
+        /* Show the dropdown menu on hover */
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .news-title-alert {
+            display: flex;
+            align-items: center;
+        }
+
+        .news-title-alert .alert {
+            margin-left: 10px; /* Расстояние между заголовком и алертом */
+        }
+    </style>
+</head>
+<body>
+<div class="container container-padding" layout:fragment="content">
+    <div class="row">
+        <h1>Мои сообщения</h1>
+    </div>
+    <div th:if="${messages.getTotalElements() != 0}">
+        <div class="row">
+            <div class="card" th:each="message : ${messages}" style="margin-bottom: 20px">
+                <h5 class="card-header d-flex justify-content-between align-items-center">
+                    <p class="h2" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;" >[[${message.username}]] предложил вам посмотреть <a th:href="@{/news/{id}(id=${message.newsId})}">[[${message.title}]]</a></p>
+                </h5>
+                <div class="card-body">
+                    <div class="row">
+                        Дата: [[${#temporals.format(message.createdAt, 'HH:mm:ss dd MMMM yyyy г.')}]]
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${messages.isFirst()} ? 'disabled' : ''">
+                        <a class="page-link"
+                           th:href="@{/messages(size=${notifications.getSize()},page=0)}">&lt;&lt;</a>
+                    </li>
+                    <li class="page-item" th:classappend="${messages.hasPrevious()} ? '' : 'disabled'">
+                        <a th:if="${messages.hasPrevious()}"
+                           class="page-link"
+                           th:href="@{/messages(size=${messages.getSize()},page=${messages.getNumber() - 1})}"
+                           th:text="${(currentPage)}"></a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link"
+                           th:href="@{/messages(size=${messages.getSize()},page=${messages.getNumber()})}"
+                           th:text="${currentPage + 1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${messages.hasNext() ? '' : 'disabled'}">
+                        <a th:if="${messages.hasNext()}"
+                           class="page-link"
+                           th:href="@{/messages(size=${messages.getSize()},page=${messages.getNumber() + 1})}"
+                           th:text="${(currentPage + 2)}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${messages.isLast()} ? 'disabled' : ''">
+                        <a class="page-link"
+                           th:href="@{/messages(size=${messages.getSize()},page=${messages.getTotalPages() - 1})}">&gt;&gt;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div th:unless="${messages.getTotalElements() != 0}">
+        <div class="row">
+            <h1 class="text-center">Пока что нет ни одного сообщения.</h1>
+        </div>
+    </div>
+</div>
+</body>
+</html>

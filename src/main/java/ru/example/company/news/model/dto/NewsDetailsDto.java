@@ -1,6 +1,5 @@
 package ru.example.company.news.model.dto;
 
-import org.springframework.beans.factory.annotation.Value;
 import ru.example.company.news.model.NewsCategory;
 
 import java.time.LocalDateTime;

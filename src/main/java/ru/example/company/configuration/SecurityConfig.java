@@ -1,11 +1,9 @@
 package ru.example.company.configuration;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -49,24 +47,25 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationSuccessHandler primarySuccessHandler) throws Exception {
         return http
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/signup/**").permitAll()
-                        .requestMatchers("/index").permitAll()
+                        .requestMatchers("/index", "/news/images/**").permitAll()
                         .requestMatchers("/users").hasRole("MODERATOR")
                         .requestMatchers("/houses").hasRole("MODERATOR")
                         .requestMatchers("/enable-2fa").authenticated()
                         .requestMatchers("/signup", "/error").permitAll()
                         .requestMatchers("/challenge/totp").access(new TwoFactorAuthorizationManager())
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/setReminder").permitAll()
+                        .requestMatchers("/user/topic/notifications").permitAll()
+                        .requestMatchers("/users/list/**").permitAll()
+                        .requestMatchers("/oauth/**").permitAll()
                         .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2 ->
-                        oauth2
-                                .loginPage("/signup/google")
-                                .defaultSuccessUrl("/")
                 )
                 .formLogin(
                         form -> form

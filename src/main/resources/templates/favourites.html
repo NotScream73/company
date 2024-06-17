@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity"
       layout:decorate="~{default}">
 <head>
     <meta charset="UTF-8">
@@ -62,7 +61,7 @@
 <body>
 <div class="container container-padding" layout:fragment="content">
     <div class="row">
-        <h1>Важные новости</h1>
+        <h1>Избранное</h1>
     </div>
     <div th:if="${newsList.getTotalElements() != 0}">
         <div class="row">
@@ -80,10 +79,8 @@
                 <div class="card-body">
                     <p class="card-text" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"
                        th:utext="${news.description}"></p>
-                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-
-                    <div th:if="${news.imageUrl != 'news/uploads'}">
-                        <img th:src="@{${news.imageUrl}}" class="card-img-top" alt="News Image">
+                    <div th:if="${news.imageUrl != null}">
+                        <img th:src="@{/news/images/{imageName}(imageName=${news.imageUrl})}" class="card-img-top" alt="News Image">
                     </div>
                     <div>
                         <button type="button" class="btn btn-outline-success">
@@ -107,28 +104,28 @@
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:classappend="${newsList.isFirst()} ? 'disabled' : ''">
                         <a class="page-link"
-                           th:href="@{/news/importants(size=${newsList.getSize()},page=0)}">&lt;&lt;</a>
+                           th:href="@{/news/breakings(size=${newsList.getSize()},page=0)}">&lt;&lt;</a>
                     </li>
                     <li class="page-item" th:classappend="${newsList.hasPrevious()} ? '' : 'disabled'">
                         <a th:if="${newsList.hasPrevious()}"
                            class="page-link"
-                           th:href="@{/news/importants(size=${newsList.getSize()},page=${newsList.getNumber() - 1})}"
+                           th:href="@{/news/breakings(size=${newsList.getSize()},page=${newsList.getNumber() - 1})}"
                            th:text="${(currentPage)}"></a>
                     </li>
                     <li class="page-item disabled">
                         <a class="page-link"
-                           th:href="@{/news/importants(size=${newsList.getSize()},page=${newsList.getNumber()})}"
+                           th:href="@{/news/breakings(size=${newsList.getSize()},page=${newsList.getNumber()})}"
                            th:text="${currentPage + 1}"></a>
                     </li>
                     <li class="page-item" th:classappend="${newsList.hasNext() ? '' : 'disabled'}">
                         <a th:if="${newsList.hasNext()}"
                            class="page-link"
-                           th:href="@{/news/importants(size=${newsList.getSize()},page=${newsList.getNumber() + 1})}"
+                           th:href="@{/news/breakings(size=${newsList.getSize()},page=${newsList.getNumber() + 1})}"
                            th:text="${(currentPage + 2)}"></a>
                     </li>
                     <li class="page-item" th:classappend="${newsList.isLast()} ? 'disabled' : ''">
                         <a class="page-link"
-                           th:href="@{/news/importants(size=${newsList.getSize()},page=${newsList.getTotalPages() - 1})}">&gt;&gt;</a>
+                           th:href="@{/news/breakings(size=${newsList.getSize()},page=${newsList.getTotalPages() - 1})}">&gt;&gt;</a>
                     </li>
                 </ul>
             </nav>
