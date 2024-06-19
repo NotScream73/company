@@ -214,6 +214,11 @@ public class UserService {
         return userRepository.findAllByHouseIdWithoutUser(houseId, userId);
     }
 
+    @Transactional(readOnly = true)
+    public List<UserNameDto> findAllUsers(User user) {
+        return userRepository.findAllByHouseIdWithoutUser(user.getHouse().getId(), user.getId());
+    }
+
     @Transactional
     public User createUser(UserSignupDto userSignupDto) {
         return createUser(userSignupDto.getUsername(), userSignupDto.getEmail(), userSignupDto.getPassword(), userSignupDto.getHouseId());

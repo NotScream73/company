@@ -1,63 +1,10 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity"
       layout:decorate="~{default}">
 <head>
     <meta charset="UTF-8">
     <title>Важные новости</title>
-    <style>
-        .card-img-top {
-            max-width: 100%; /* Ограничение ширины до ширины контейнера */
-            max-height: 400px; /* Ограничение высоты до 300 пикселей */
-            display: block; /* Устанавливаем блочный элемент */
-            margin: 0 auto; /* Выравниваем по центру */
-            object-fit: scale-down;
-        }
-
-        /* The container <div> - needed to position the dropdown content */
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        /* Dropdown Content (Hidden by Default) */
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f1f1f1;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-            z-index: 1;
-        }
-
-        /* Links inside the dropdown */
-        .dropdown-content a {
-            color: black;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
-
-        /* Change color of dropdown links on hover */
-        .dropdown-content a:hover {
-            background-color: #ddd;
-        }
-
-        /* Show the dropdown menu on hover */
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-
-        .news-title-alert {
-            display: flex;
-            align-items: center;
-        }
-
-        .news-title-alert .alert {
-            margin-left: 10px; /* Расстояние между заголовком и алертом */
-        }
-    </style>
 </head>
 <body>
 <div class="container container-padding" layout:fragment="content">
@@ -82,7 +29,7 @@
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:classappend="${messages.isFirst()} ? 'disabled' : ''">
                         <a class="page-link"
-                           th:href="@{/messages(size=${notifications.getSize()},page=0)}">&lt;&lt;</a>
+                           th:href="@{/messages(size=${messages.getSize()},page=0)}">&lt;&lt;</a>
                     </li>
                     <li class="page-item" th:classappend="${messages.hasPrevious()} ? '' : 'disabled'">
                         <a th:if="${messages.hasPrevious()}"

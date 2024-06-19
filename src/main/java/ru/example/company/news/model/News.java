@@ -7,8 +7,11 @@ import lombok.experimental.Accessors;
 import org.hibernate.annotations.UuidGenerator;
 import ru.example.company.house.model.House;
 import ru.example.company.user.model.User;
+import ru.example.company.user.model.UserNews;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -50,4 +53,7 @@ public class News {
     @ManyToOne
     @JoinColumn(name = "house_id", nullable = false)
     private House house;
+    @OneToMany(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserNews> userNewsList = new ArrayList<>();
+
 }

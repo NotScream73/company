@@ -4,7 +4,6 @@
       layout:decorate="~{default}">
     <head>
         <title>Главная страница</title>
-
         <style>
             .card-img-top {
                 max-width: 100%; /* Ограничение ширины до ширины контейнера */
@@ -18,38 +17,6 @@
             .dropdown {
                 position: relative;
                 display: inline-block;
-            }
-
-            /* Dropdown Content (Hidden by Default) */
-            .dropdown-content {
-                display: none;
-                position: absolute;
-                background-color: #f1f1f1;
-                min-width: 160px;
-                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-                z-index: 1;
-            }
-
-            /* Links inside the dropdown */
-            .dropdown-content a {
-                color: black;
-                padding: 12px 16px;
-                text-decoration: none;
-                display: block;
-            }
-
-            /* Change color of dropdown links on hover */
-            .dropdown-content a:hover {background-color: #ddd;}
-
-            /* Show the dropdown menu on hover */
-            .dropdown:hover .dropdown-content {display: block;}
-            .news-title-alert {
-                display: flex;
-                align-items: center;
-            }
-
-            .news-title-alert .alert {
-                margin-left: 10px; /* Расстояние между заголовком и алертом */
             }
         </style>
     </head>
@@ -77,8 +44,11 @@
                             <h5 class="card-header d-flex justify-content-between align-items-center">
                                 <p class="h2" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;" >[[${news.title}]] <span th:if="${news.category.name() != 'GENERAL'}" class="badge bg-danger">[[${news.category.displayName}]]</span></p>
                                 <div th:attr="data-id=${news.id}" onclick="addToFavorites(this)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                         class="bi bi-bookmark" viewBox="0 0 16 16">
+                                    <svg th:if="${favourites.contains(news.id) == true}" xmlns="http://www.w3.org/2000/svg"
+                                         width="16" height="16" fill="currentColor" class="bi bi-bookmark-fill" viewBox="0 0 16 16">
+                                        <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
+                                    </svg>
+                                    <svg th:if="${favourites.contains(news.id) != true}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
                                         <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
                                     </svg>
                                 </div>
@@ -93,9 +63,8 @@
                                         <button role="button" class="btn btn-primary">Скрыть</button>
                                     </form>
                                     <button role="button" class="btn btn-primary" th:attr="data-id=${news.id}" onclick="openShareModal(this)">Поделиться</button>
-                                    <!-- Modal -->
                                     <button role="button" class="btn btn-primary" th:attr="data-id=${news.id}" onclick="copyToClipboard(this)">Скопировать ссылку</button>
-                                    <div class="dropdown">
+                                    <div class="dropdown" id="menu">
                                         <button role="button" class="btn btn-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             Установить напоминание
                                         </button>
@@ -131,8 +100,11 @@
                             <h5 class="card-header d-flex justify-content-between align-items-center">
                                 <p class="h2" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;" >[[${news.title}]] <span th:if="${news.category.name() != 'GENERAL'}" class="badge bg-danger">[[${news.category.displayName}]]</span></p>
                                 <div th:attr="data-id=${news.id}" onclick="addToFavorites(this)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                         class="bi bi-bookmark" viewBox="0 0 16 16">
+                                    <svg th:if="${favourites.contains(news.id) == true}" xmlns="http://www.w3.org/2000/svg"
+                                         width="16" height="16" fill="currentColor" class="bi bi-bookmark-fill" viewBox="0 0 16 16">
+                                        <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
+                                    </svg>
+                                    <svg th:if="${favourites.contains(news.id) != true}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
                                         <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
                                     </svg>
                                 </div>
@@ -147,30 +119,9 @@
                                         <button role="button" class="btn btn-primary">Скрыть</button>
                                     </form>
                                     <button role="button" class="btn btn-primary" th:attr="data-id=${news.id}" onclick="openShareModal(this)">Поделиться</button>
-                                    <!-- Modal -->
-                                    <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="exampleModalLabel">Поделиться новостью</h5>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form id="shareForm">
-                                                        <div class="form-group">
-                                                            <label for="destinationId">Выберите получателя</label>
-                                                            <select class="form-control" id="destinationId" name="destinationId">
-                                                            </select>
-                                                        </div>
-                                                        <input type="hidden" id="newsId" name="newsId" th:value="${news.id}">
-                                                        <input type="hidden" id="senderId" name="senderId" th:value="${userId}">
-                                                        <button type="button" class="btn btn-primary" onclick="sendNews()">Отправить</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+
                                     <button role="button" class="btn btn-primary" th:attr="data-id=${news.id}" onclick="copyToClipboard(this)">Скопировать ссылку</button>
-                                    <div class="dropdown">
+                                    <div class="dropdown" id="bMenu">
                                         <button role="button" class="btn btn-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             Установить напоминание
                                         </button>
@@ -195,6 +146,31 @@
                 <div th:unless="${newsList.getTotalElements() != 0}">
                     <div class="row">
                         <h1 class="text-center">Ничего не найдено</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Поделиться новостью</h5>
+                        </div>
+                        <div class="modal-body">
+                            <form id="shareForm">
+                                <div class="form-group">
+                                    <label>Выберите получателя</label>
+                                    <select class="form-control" name="destinationId">
+                                        <option th:each="user : ${users}"
+                                                th:value="${user.id}"
+                                                th:text="${user.username}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <input type="hidden" id="newsId" name="newsId" />
+                                <input type="hidden" id="senderId" name="senderId" th:value="${userId}" />
+                                <button type="button" class="btn btn-primary" onclick="sendNews()">Отправить</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -248,4 +224,116 @@
             </div>
         </div>
     </body>
+    <script layout:fragment="scripts">
+        var favorites = {
+            false: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+</svg>`,
+            true: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-fill" viewBox="0 0 16 16">
+  <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
+</svg>`
+        }
+
+        function addToFavorites(button) {
+            const newsId = button.getAttribute('data-id');
+            fetch(`/news/favorite/${newsId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.favourite === "true")
+                        button.innerHTML = favorites.true;
+                    else
+                        button.innerHTML = favorites.false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function openShareModal(button) {
+            var newsId = $(button).data('id');
+            $('#newsId').val(newsId);
+            $('#shareModal').modal('show');
+            /*$.ajax({
+                url: '/users/list/' + newsId + '?userId=' + '[[${userId}]]',
+                method: 'GET',
+                success: function (data) {
+                    var recipientSelect = $('#destinationId');
+                    recipientSelect.empty();
+                    data.forEach(function (user) {
+                        recipientSelect.append(new Option(user.username, user.id));
+                    });
+                    $('#shareModal').modal('show');
+                }
+            });*/
+        }
+
+        function sendNews() {
+            var formData = $('#shareForm').serialize();
+
+            $.ajax({
+                url: '/messages/send',
+                method: 'POST',
+                data: formData,
+                success: function () {
+                    $('#shareModal').modal('hide');
+                    alert('Новость успешно отправлена!');
+                }
+            });
+        }
+        $(document).ready(function () {
+            $("#menu .dropdown-item").click(function () {
+                var delay = $(this).data("value");
+                var newsId = $(this).data("id");
+                setReminder(delay, newsId);
+            });
+            $("#bMenu .dropdown-item").click(function () {
+                var delay = $(this).data("value");
+                var newsId = $(this).data("id");
+                setBReminder(delay, newsId);
+            });
+        });
+
+        function setReminder(delay, newsId) {
+            $.ajax({
+                url: '/setReminder',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({username: '[[${#authentication.name}]]', delay: delay, newsId: newsId}), // заменить на реального пользователя
+                success: function (response) {
+                    toastr.info(response);
+                }
+            });
+        }
+
+        function setBReminder(delay, newsId) {
+            $.ajax({
+                url: '/setReminder',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({username: '[[${#authentication.name}]]', delay: delay, newsId: newsId}), // заменить на реального пользователя
+                success: function (response) {
+                    toastr.info(response);
+                }
+            });
+        }
+        function copyToClipboard(button) {
+            var newsId = $(button).data('id');
+            var link = 'http://localhost/news/' + newsId;
+            var tempInput = document.createElement("input");
+            tempInput.style.position = "absolute";
+            tempInput.style.left = "-9999px";
+            tempInput.value = link;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            toastr.info(`Ссылка на новость скопирована в буфер обмена.`);
+        }
+    </script>
 </html>

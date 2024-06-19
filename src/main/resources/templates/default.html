@@ -15,10 +15,10 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    </head>
-    <body class="d-flex flex-column h-100">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    </head>
+    <body class="d-flex flex-column h-100">
         <header>
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
                 <div class="container-fluid">
@@ -107,134 +107,19 @@
             </div>
         </footer>
     </body>
-    <th:block layout:fragment="scripts">
-        <script src="https://unpkg.com/@vkid/sdk@latest/dist-sdk/umd/index.js"></script>
-        <script>
-            const VKID = window.VKIDSDK;
-            // Создание экземпляра кнопки.
-            const oneTap = new VKID.OneTap();
+    <script>
+        var stompClient = null;
 
-            // Получение контейнера из разметки.
-            const container = document.getElementById('VkIdSdkOneTap');
-
-            // Проверка наличия кнопки в разметке.
-            if (container) {
-                // Отрисовка кнопки в контейнере с именем приложения APP_NAME, светлой темой и на русском языке.
-                oneTap.render({ container: container, scheme: VKID.Scheme.LIGHT, lang: VKID.Languages.RUS });
-            }
-            VKID.Config.set({
-                app: 51914824, // Идентификатор приложения.
-                redirectUrl: 'http://localhost/signup/vk', // Адрес для перехода после авторизации.
-                state: 'dj29fnsadjsd82...' // Произвольная строка состояния приложения.
-            });
-
-            var stompClient = null;
-
-            function connect() {
-                var socket = new SockJS('http://localhost/ws');
-                stompClient = Stomp.over(socket);
-                stompClient.connect({}, function (frame) {
-                    console.log('Connected: ' + frame);
-                    stompClient.subscribe('/user/topic/notifications', function (notification) {
-                        toastr.success(notification.body);
-                    });
-                });
-            }
-            connect();
-
-            var favorites = {
-                false: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
-  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
-</svg>`,
-                true: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-fill" viewBox="0 0 16 16">
-  <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
-</svg>`
-            }
-
-            function addToFavorites(button) {
-                const newsId = button.getAttribute('data-id');
-                fetch(`/news/favorite/${newsId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({})
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.favourite === "true")
-                            button.innerHTML = favorites.true;
-                        else
-                            button.innerHTML = favorites.false;
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-            }
-
-            function openShareModal(button) {
-                var newsId = $(button).data('id');
-                $('#newsId').val(newsId);
-                $.ajax({
-                    url: '/users/list/' + newsId + '?userId=' + '[[${userId}]]',
-                    method: 'GET',
-                    success: function (data) {
-                        var recipientSelect = $('#destinationId');
-                        recipientSelect.empty();
-                        data.forEach(function (user) {
-                            recipientSelect.append(new Option(user.username, user.id));
-                        });
-                        $('#shareModal').modal('show');
-                    }
-                });
-            }
-
-            function sendNews() {
-                var formData = $('#shareForm').serialize();
-
-                $.ajax({
-                    url: '/messages/send',
-                    method: 'POST',
-                    data: formData,
-                    success: function () {
-                        $('#shareModal').modal('hide');
-                        alert('Новость успешно отправлена!');
-                    }
-                });
-            }
-
-            $(document).ready(function () {
-                $("#menu .dropdown-item").click(function () {
-                    var delay = $(this).data("value");
-                    var newsId = $(this).data("id");
-                    setReminder(delay, newsId);
+        function connect() {
+            var socket = new SockJS('http://localhost/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function () {
+                stompClient.subscribe('/user/topic/notifications', function (notification) {
+                    toastr.success(notification.body);
                 });
             });
-
-            function setReminder(delay, newsId) {
-                $.ajax({
-                    url: '/setReminder',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({username: '[[${#authentication.name}]]', delay: delay, newsId: newsId}), // заменить на реального пользователя
-                    success: function (response) {
-                        toastr.info(response);
-                    }
-                });
-            }
-            function copyToClipboard(button) {
-                var newsId = $(button).data('id');
-                var link = 'http://localhost/news/' + newsId;
-                var tempInput = document.createElement("input");
-                tempInput.style.position = "absolute";
-                tempInput.style.left = "-9999px";
-                tempInput.value = link;
-                document.body.appendChild(tempInput);
-                tempInput.select();
-                document.execCommand("copy");
-                document.body.removeChild(tempInput);
-                toastr.info(`Ссылка на новость скопирована в буфер обмена.`);
-            }
-        </script>
-    </th:block>
+        }
+        connect();
+    </script>
+    <th:block layout:fragment="scripts"></th:block>
 </html>

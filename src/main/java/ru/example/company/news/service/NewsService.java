@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.example.company.house.exception.HouseNotFoundException;
 import ru.example.company.house.service.HouseService;
 import ru.example.company.news.exception.NewsNotFoundException;
 import ru.example.company.news.model.News;
@@ -32,11 +33,13 @@ import java.nio.file.Paths;
 import ru.example.company.notification.model.Notification;
 import ru.example.company.notification.model.NotificationKey;
 import ru.example.company.notification.repository.NotificationRepository;
+import ru.example.company.user.repository.UserNewsRepository;
 import ru.example.company.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor
 public class NewsService {
+    private final UserNewsRepository userNewsRepository;
     @Value("${upload.path}")
     private String uploadPath;
     private final NotificationRepository notificationRepository;
@@ -119,7 +122,9 @@ public class NewsService {
         }
         notificationRepository.saveAll(notifications);
     }
-
+    public List<UUID> findFavouritesByUserId(UUID userId){
+        return userNewsRepository.findNewsIdByUserIdAndIsFavoriteIsNot(userId);
+    }
     public void updateNews(UUID id, NewsCreateDto newsCreateDto) {
         var news = newsRepository.findById(id).orElseThrow(() -> new RuntimeException("Пизда"));
 
@@ -159,6 +164,9 @@ public class NewsService {
 
     public void importNews(NewsImportDto newsImportDto) {
         var house = houseService.findIdByAddress(newsImportDto.getHouseAddress());
+        if (house == null){
+            throw new RuntimeException("Не найден дом: " + newsImportDto.getHouseAddress());
+        }
         News news = new News();
         news.setTitle(newsImportDto.getTitle());
         news.setDescription(newsImportDto.getDescription());

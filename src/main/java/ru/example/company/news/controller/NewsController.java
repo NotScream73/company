@@ -26,6 +26,7 @@ import ru.example.company.news.model.dto.NewsCreateDto;
 import ru.example.company.news.model.dto.NewsFilterDto;
 import ru.example.company.news.model.dto.NewsImportDto;
 import ru.example.company.news.service.NewsService;
+import ru.example.company.user.repository.UserNewsRepository;
 import ru.example.company.user.service.UserService;
 
 import java.io.File;
@@ -46,8 +47,10 @@ public class NewsController {
     private final NewsService newsService;
     private final HouseService houseService;
     private final UserService userService;
+    private final UserNewsRepository userNewsRepository;
     @Value("${upload.path}")
     private String uploadPath;
+    private final String prefix = "http://localhost";
 
     @GetMapping
     public String getAllNews(Model model,
@@ -57,7 +60,8 @@ public class NewsController {
                                      size = 2,
                                      sort = "createdAt",
                                      direction = Sort.Direction.DESC) Pageable pageable) {
-
+        var user = accountUserDetails.getUser();
+        filter.setUserId(user.getId());
         var categories = NewsCategory.values();
         var houses = houseService.findAll();
         model.addAttribute("categories", categories);
@@ -68,7 +72,8 @@ public class NewsController {
         Page<News> news = newsService.findAll(filter, pageable);
         model.addAttribute("newsList", news);
         model.addAttribute("currentPage", news.getPageable().getPageNumber());
-        model.addAttribute("userId", accountUserDetails.getUser().getId());
+        model.addAttribute("userId", user.getId());
+        model.addAttribute("favourites", userNewsRepository.findNewsIdByUserIdAndIsFavoriteIsNot(user.getId()));
         return "news";
     }
 
@@ -138,7 +143,7 @@ public class NewsController {
     public String hideNews(@AuthenticationPrincipal CustomUserDetails accountUserDetails, HttpServletRequest req, @PathVariable UUID newsId) {
         userService.hideNews(accountUserDetails.getUser(), newsId);
         var url = req.getHeader("referer");
-        return "redirect:/" + url;
+        return "redirect:" + url.substring(prefix.length());
     }
 
 
@@ -157,13 +162,16 @@ public class NewsController {
                                                sort = "createdAt",
                                                direction = Sort.Direction.DESC) Pageable pageable) {
         var filter = new NewsFilterDto();
+        var user = accountUserDetails.getUser();
         filter.setCategory(NewsCategory.BREAKING);
         filter.setIsArchived(null);
-        filter.setHouseId(accountUserDetails.getUser().getHouse().getId());
+        filter.setHouseId(user.getHouse().getId());
         filter.setExpiresAt(LocalDateTime.now());
         var news = newsService.findAll(filter, pageable);
         model.addAttribute("newsList", news);
         model.addAttribute("currentPage", news.getPageable().getPageNumber());
+        model.addAttribute("userId", user.getId());
+        model.addAttribute("favourites", userNewsRepository.findNewsIdByUserIdAndIsFavoriteIsNot(user.getId()));
         return "breakings";
     }
 
@@ -177,6 +185,8 @@ public class NewsController {
         var news = newsService.findAllFavourites(accountUserDetails.getUser().getId(), pageable);
         model.addAttribute("newsList", news);
         model.addAttribute("currentPage", news.getPageable().getPageNumber());
+        model.addAttribute("userId", accountUserDetails.getUser().getId());
+        model.addAttribute("favourites", userNewsRepository.findNewsIdByUserIdAndIsFavoriteIsNot(accountUserDetails.getUser().getId()));
         return "favourites";
     }
 

@@ -1,0 +1,9 @@
+{
+  "category": "BREAKING",
+  "createdAt": "2024-06-15T12:34:56",
+  "description": "This is a sample news description. It can be up to 2000 characters long.",
+  "expiresAt": "2024-12-31T23:59:59",
+  "isArchived": false,
+  "title": "Sample News Title",
+  "houseAddress": "Дом №1"
+}

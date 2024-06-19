@@ -20,10 +20,10 @@
     <div class="row col-md-8 offset-md-2">
         <div th:if="${validationErrors != null}" class="p-3 mb-2 bg-danger bg-gradient text-white">
             <p class="h1">Обнаружены ошибки
-                <ul>
-                    <li th:each="error : ${validationErrors}"
-                        th:text="${error}"></li>
-                </ul>
+            <ul>
+                <li th:each="error : ${validationErrors}"
+                    th:text="${error}"></li>
+            </ul>
             </p>
         </div>
         <div class="card p-0">
@@ -139,7 +139,7 @@
             </div>
         </div>
     </div>
-    <script>
+    <script layout:fragment="scripts">
         function toggleDatetimeInputs() {
             const selection = document.getElementById('category').value;
             const datetimeInputs = document.getElementById('datetimeInputs');

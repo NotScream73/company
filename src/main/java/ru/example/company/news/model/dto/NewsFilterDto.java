@@ -26,4 +26,5 @@ public class NewsFilterDto {
     private LocalDateTime expiresAt;
 
     private UUID houseId;
+    private UUID userId;
 }

@@ -2,6 +2,9 @@
 <html lang="en"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{default}">
+    <head>
+        <script src="https://unpkg.com/@vkid/sdk@latest/dist-sdk/umd/index.js"></script>
+    </head>
     <div class="container container-padding" layout:fragment="content">
         <div class="row col-md-8 offset-md-2">
             <div class="row">
@@ -64,4 +67,24 @@
             </div>
         </div>
     </div>
+    <script layout:fragment="scripts">
+
+        const VKID = window.VKIDSDK;
+        // Создание экземпляра кнопки.
+        const oneTap = new VKID.OneTap();
+
+        // Получение контейнера из разметки.
+        const container = document.getElementById('VkIdSdkOneTap');
+
+        // Проверка наличия кнопки в разметке.
+        if (container) {
+            // Отрисовка кнопки в контейнере с именем приложения APP_NAME, светлой темой и на русском языке.
+            oneTap.render({ container: container, scheme: VKID.Scheme.LIGHT, lang: VKID.Languages.RUS });
+        }
+        VKID.Config.set({
+            app: 51914824, // Идентификатор приложения.
+            redirectUrl: 'http://localhost/signup/vk', // Адрес для перехода после авторизации.
+            state: 'dj29fnsadjsd82...' // Произвольная строка состояния приложения.
+        });
+    </script>
 </html>
